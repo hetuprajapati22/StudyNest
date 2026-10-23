@@ -1,191 +1,85 @@
-# StudyNest — Student Planner & Assignment Tracker
+# StudyNest 🎓
+> Modern Student Planner, Assignment Tracker & Official GU Semester 5 Timetable Dashboard.
 
-A polished, modern student productivity web application built with pure HTML5, CSS3 and Vanilla JavaScript. No frameworks, no build system, no backend required.
+[![Live Demo](https://img.shields.io/badge/demo-online-green.svg)](https://hetuprajapati22.github.io/StudyNest/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
----
+StudyNest is a clean, lightweight productivity web application designed specifically for engineering students. It features an interactive student dashboard, assignment manager, daily study goals, and Gandhinagar University (GIT) B.Tech Semester 5 master timetable with division selection.
 
-## Features
-
-| Feature | Description |
-|---|---|
-| 📊 Dashboard | Live stats, today's tasks, upcoming deadlines, progress bars |
-| ✅ Assignment Tracker | Add, edit, delete, filter, search and sort assignments |
-| 📅 Weekly Timetable | Visual weekly class schedule with overlap detection |
-| 🎯 Study Goals | Daily goals with history archiving |
-| 🌙 Dark Mode | Full dark theme with instant toggle |
-| 💾 LocalStorage | All data persists in the browser automatically |
-| 🎓 Demo Data | Sample data to explore all features instantly |
+🌐 **Live Demo:** [hetuprajapati22.github.io/StudyNest](https://hetuprajapati22.github.io/StudyNest/)
 
 ---
 
-## Getting Started
+## ✨ Features
 
-### Option 1: Open directly in a browser (Simplest)
+- 📅 **Official GU Sem 5 Timetable**
+  - Branch & division selector for:
+    - **CE:** 5A-CE, 5B-CE
+    - **IT:** 5A-IT, 5B-IT
+    - **CSE:** 5A-CSE, 5B-CSE, 5C-CSE
+    - **AI:** 5A-AI
+    - **CS:** 5A-CS
+  - Visual distinction for Lectures, 2-Hour Labs (with Batch 1/2/3 breakdown), and Free periods.
+  - Quick Day-tabs (Mon–Sat) and current day highlighting.
+- 📊 **Smart Dashboard**
+  - Live "Today's Classes" card showing upcoming lectures and venues.
+  - Real-time statistics: Total, Pending, Completed, and Overdue assignments.
+  - Overall study completion progress bar.
+- 📝 **Assignment Tracker**
+  - Add, edit, delete, and mark assignments complete/pending.
+  - Filter by Subject, Status, Priority (Low/Medium/High), or search by keyword.
+  - Auto-suggests subjects based on your selected college division.
+- 🎯 **Daily Study Goals**
+  - Set daily focus targets with completion tracking.
+  - Daily reset logic with automatic 30-day history archiving.
+- 🌙 **Dark & Light Mode**
+  - Instant theme toggle with full persistence.
+- 💾 **100% Client-Side & Private**
+  - Powered by browser `LocalStorage`. No servers, no sign-ups, zero tracking.
 
-1. Download or clone this repository.
-2. Open `index.html` in any modern browser (Chrome, Firefox, Edge, Safari).
-3. No server, no installation, no build step required.
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** HTML5, CSS3, Vanilla JavaScript (ES6+)
+- **Design:** Modern design system (Lavender, Sage Green & Warm Cream)
+- **Data Source:** Official GU Class Master Timetable (AY 2026–27, R2)
+- **Deployment:** GitHub Pages
+
+---
+
+## 🚀 Quick Start
+
+Run it locally without any installation or build tools:
 
 ```bash
-# Clone the repo
-git clone https://github.com/yourusername/studynest.git
-cd studynest
+# Clone the repository
+git clone https://github.com/hetuprajapati22/StudyNest.git
 
-# Open in browser (Windows)
-start index.html
-
-# Open in browser (macOS)
-open index.html
-
-# Open in browser (Linux)
-xdg-open index.html
+# Open index.html in your browser
+cd StudyNest
+start index.html   # On Windows (or open directly in any browser)
 ```
-
-### Option 2: Local development server (Recommended for development)
-
-Use any simple static file server:
-
-```bash
-# Using Python 3
-python -m http.server 8080
-
-# Using Node.js (npx)
-npx serve .
-
-# Using VS Code Live Server extension
-# Right-click index.html → "Open with Live Server"
-```
-
-Then open `http://localhost:8080` in your browser.
 
 ---
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 StudyNest/
-├── index.html          # Single-page application shell
+├── index.html                  # Single-page application shell
 ├── css/
-│   └── style.css       # All styles: variables, layout, components, dark mode, responsive
+│   └── style.css               # Design system & responsive styles
 ├── js/
-│   ├── storage.js      # LocalStorage operations, data validation, demo data
-│   └── app.js          # UI rendering, events, navigation, feature logic
-├── assets/
-│   └── README.md       # Assets placeholder
-├── README.md           # This file
-└── .gitignore
-```
-
-### Code Architecture
-
-- **`storage.js`** — Pure data layer. Reads, writes, validates and generates IDs. No DOM access.
-- **`app.js`** — UI layer. Renders components, handles events, delegates storage to `storage.js`.
-- **`style.css`** — CSS custom properties for theming. Components follow a BEM-inspired naming convention.
-
----
-
-## Deployment
-
-### GitHub Pages
-
-1. Push the repository to GitHub.
-2. Go to **Settings → Pages**.
-3. Set source to **Deploy from a branch → main → / (root)**.
-4. Your site will be live at `https://yourusername.github.io/studynest/`.
-
-### Netlify (Drag & Drop)
-
-1. Go to [netlify.com](https://netlify.com) and sign in.
-2. Drag the entire `StudyNest/` folder onto the Netlify dashboard.
-3. Done — Netlify gives you a live URL instantly.
-
-### Netlify CLI
-
-```bash
-npm install -g netlify-cli
-netlify deploy --dir . --prod
-```
-
-### Vercel
-
-```bash
-npm install -g vercel
-vercel --prod
+│   ├── app.js                  # UI controllers & event logic
+│   ├── storage.js              # LocalStorage CRUD & persistence
+│   └── timetable-data.js       # Official GU timetable dataset
+├── MTT_SEM_5_2026_Div_R2.pdf   # Source master timetable PDF
+└── README.md
 ```
 
 ---
 
-## Browser Support
+## 📄 License
 
-| Browser | Support |
-|---|---|
-| Chrome 90+ | ✅ Full |
-| Firefox 90+ | ✅ Full |
-| Edge 90+ | ✅ Full |
-| Safari 14+ | ✅ Full |
-| Mobile Chrome | ✅ Full |
-| Mobile Safari | ✅ Full |
-
----
-
-## LocalStorage Data Structure
-
-StudyNest uses the following LocalStorage keys:
-
-| Key | Type | Contents |
-|---|---|---|
-| `studynest_assignments` | Array | Assignment objects |
-| `studynest_timetable` | Array | Timetable entry objects |
-| `studynest_goals` | Array | Today's study goal objects |
-| `studynest_goal_history` | Array | Archived goal history (last 30 days) |
-| `studynest_settings` | Object | Theme, firstVisit flag |
-| `studynest_last_date` | String | ISO date for daily goal reset detection |
-| `studynest_is_demo` | Boolean | Whether demo data is currently loaded |
-
----
-
-## Known Limitations (Version 1)
-
-1. **Local storage only** — Data does not sync across devices or browsers.
-2. **No user accounts** — Any person using the same browser profile sees the same data.
-3. **No offline PWA** — No service worker or app manifest in v1.
-4. **Timetable** — Displayed as a compact table. Time-slot grid (like Google Calendar) is planned for v2.
-5. **No recurring assignments** — Each assignment is a one-off entry.
-6. **No file attachments** — Notes are plain text only.
-
----
-
-## Future Paid Features (Version 2+)
-
-- ☁️ Cloud sync and multi-device support
-- 👤 User accounts and secure login
-- 🔔 Browser push notifications for deadlines
-- 📱 Progressive Web App (offline support, installable)
-- 📎 File attachments on assignments
-- 🔄 Recurring assignments and events
-- 📊 Analytics dashboard (study hours, streak tracking)
-- 🤝 Group/collaborative study features
-- 🎨 Custom colour themes and subjects
-- 📤 PDF export of timetable and assignment list
-- 🔗 Google Calendar / iCal integration
-
----
-
-## Development Notes
-
-- All code is in English with comments where helpful.
-- CSS uses custom properties (variables) for easy theming.
-- JavaScript follows the Module Pattern (IIFE) for clean encapsulation.
-- No third-party dependencies — zero npm packages needed.
-- All interactive elements have ARIA labels for accessibility.
-- Form validation is inline with clear error messages.
-
----
-
-## License
-
-MIT License — Free to use, modify and distribute for personal and commercial projects.
-
----
-
-*StudyNest v1.0 — Built with ❤️ for students, by a developer who understands the struggle.*
+This project is licensed under the [MIT License](LICENSE).
