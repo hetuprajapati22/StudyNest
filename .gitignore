@@ -1,0 +1,46 @@
+# Dependencies & Build Artifacts
+node_modules/
+npm-debug.log*
+yarn-error.log
+.pnp
+.pnp.js
+package-lock.json
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Editor & IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.history/
+
+# Logs
+*.log
+logs/
+
+# Build output (for future use)
+dist/
+build/
+out/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Environment files (never commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Netlify
+.netlify/

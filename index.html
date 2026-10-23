@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="StudyNest — A modern student planner and assignment tracker. Manage your studies, timetable and goals all in one place." />
+  <title>StudyNest — Student Planner</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════
+     NOTIFICATION TOAST
+════════════════════════════════════════════════════ -->
+<div id="notification-container" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ══════════════════════════════════════════════════
+     COLLEGE TIMETABLE ONBOARDING / SELECTION MODAL
+════════════════════════════════════════════════════ -->
+<div id="college-modal-overlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="college-modal-title" style="display: none;">
+  <div class="modal-dialog college-modal">
+    <div class="college-modal__header">
+      <div class="college-modal__icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <div>
+        <h2 id="college-modal-title" class="college-modal__title">Select Your College Timetable</h2>
+        <p class="college-modal__subtitle">Gandhinagar University (GIT) — B.Tech Semester 5 (AY 2026–27)</p>
+      </div>
+      <button class="icon-btn" id="college-modal-close" aria-label="Close dialog" style="margin-left: auto; display: none;">&times;</button>
+    </div>
+
+    <form id="college-select-form" class="college-modal__body">
+      <p class="college-modal__desc">
+        Choose your engineering branch and division to automatically load your official weekly schedule, lab sessions, and classroom venues.
+      </p>
+
+      <div class="form-group mb-4">
+        <label class="form-label" for="college-branch-select">
+          1. Select Branch <span class="required">*</span>
+        </label>
+        <select id="college-branch-select" class="form-select" required>
+          <option value="">-- Choose Branch --</option>
+          <option value="CE">Computer Engineering (CE)</option>
+          <option value="IT">Information Technology (IT)</option>
+          <option value="CSE">Computer Science &amp; Engineering (CSE)</option>
+          <option value="AI">Artificial Intelligence (AI)</option>
+          <option value="CS">Computer Science (CS)</option>
+        </select>
+      </div>
+
+      <div class="form-group mb-4">
+        <label class="form-label" for="college-div-select">
+          2. Select Division <span class="required">*</span>
+        </label>
+        <select id="college-div-select" class="form-select" disabled required>
+          <option value="">-- First Select Branch --</option>
+        </select>
+      </div>
+
+      <div id="college-div-preview" class="college-div-preview" style="display: none;">
+        <span class="preview-badge" id="preview-badge">5A-CSE</span>
+        <span id="preview-text">Computer Science &amp; Engineering</span>
+      </div>
+
+      <div class="college-modal__actions">
+        <button type="submit" id="college-save-btn" class="btn btn--primary btn--lg" style="width: 100%;" disabled>
+          Load My College Timetable
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     CONFIRM DIALOG
+════════════════════════════════════════════════════ -->
+<div id="confirm-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title" aria-hidden="true">
+  <div class="confirm-dialog">
+    <div class="confirm-dialog__icon" aria-hidden="true">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <h2 class="confirm-dialog__title" id="confirm-title">Are you sure?</h2>
+    <p class="confirm-dialog__message" id="confirm-message">This action cannot be undone.</p>
+    <div class="confirm-dialog__actions">
+      <button id="confirm-cancel" class="btn btn--secondary">Cancel</button>
+      <button id="confirm-ok"     class="btn btn--danger">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     MOBILE MENU
+════════════════════════════════════════════════════ -->
+<div id="mobile-menu" class="mobile-menu" role="dialog" aria-modal="true" aria-label="Navigation menu">
+  <div class="mobile-menu__overlay" id="mobile-overlay"></div>
+  <nav class="mobile-menu__panel" aria-label="Mobile navigation">
+    <button class="mobile-menu__close" id="mobile-menu-close" aria-label="Close menu">×</button>
+    <div class="brand-logo" style="margin-bottom: 16px;">
+      <div class="brand-logo__icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+        </svg>
+      </div>
+      <div class="brand-logo__text">
+        <span class="brand-logo__name">StudyNest</span>
+        <span class="brand-logo__tagline">Student Planner</span>
+      </div>
+    </div>
+    <button class="nav-link" data-nav="dashboard" aria-label="Dashboard">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-link" data-nav="assignments" aria-label="Assignments">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Assignments
+    </button>
+    <button class="nav-link" data-nav="timetable" aria-label="Timetable">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Timetable
+    </button>
+    <button class="nav-link" data-nav="goals" aria-label="Study Goals">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+      Study Goals
+    </button>
+    <button class="nav-link" data-nav="settings" aria-label="Settings">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 19.07a10 10 0 010-14.14"/><path d="M15.54 8.46a5 5 0 010 7.07M8.46 15.54a5 5 0 010-7.07"/></svg>
+      Settings
+    </button>
+  </nav>
+</div>
+
+<!-- ══════════════════════════════════════════════════
+     APP WRAPPER
+════════════════════════════════════════════════════ -->
+<div class="app-wrapper">
+
+  <!-- ── SIDEBAR ──────────────────────────────────── -->
+  <aside class="sidebar" role="navigation" aria-label="Main navigation">
+    <div class="sidebar__brand">
+      <div class="brand-logo">
+        <div class="brand-logo__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+          </svg>
+        </div>
+        <div class="brand-logo__text">
+          <span class="brand-logo__name">StudyNest</span>
+          <span class="brand-logo__tagline">Student Planner</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar__nav" aria-label="Application sections">
+      <div class="nav-section-label">Menu</div>
+      <button class="nav-link" data-nav="dashboard">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Dashboard
+      </button>
+      <button class="nav-link" data-nav="assignments">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+        </svg>
+        Assignments
+      </button>
+      <button class="nav-link" data-nav="timetable">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        Timetable
+      </button>
+      <button class="nav-link" data-nav="goals">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="6"/>
+          <circle cx="12" cy="12" r="2"/>
+        </svg>
+        Study Goals
+      </button>
+
+      <div class="nav-section-label" style="margin-top: 8px;">Account</div>
+      <button class="nav-link" data-nav="settings">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+        </svg>
+        Settings
+      </button>
+    </nav>
+
+    <div class="sidebar__footer">
+      <div>StudyNest v1.0</div>
+      <div>Data saved locally in your browser.</div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN CONTENT ──────────────────────────────── -->
+  <div class="main-content">
+
+    <!-- Mobile Header -->
+    <header class="mobile-header">
+      <div class="mobile-brand">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-lavender)" stroke-width="2.5">
+          <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+        </svg>
+        StudyNest
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobile-menu">
+        <span></span><span></span><span></span>
+      </button>
+    </header>
+
+    <div class="page-content">
+
+      <!-- ════════════════════════════════════════════
+           DASHBOARD SECTION
+      ════════════════════════════════════════════ -->
+      <section id="section-dashboard" class="section" tabindex="-1" aria-label="Dashboard">
+
+        <!-- Welcome Banner (first-visit) -->
+        <div id="welcome-banner" role="banner">
+          <div class="welcome-banner__content">
+            <h2 class="welcome-banner__title">Welcome to StudyNest! 🎓</h2>
+            <p class="welcome-banner__subtitle">Your personal student planner for assignments, timetable and study goals.</p>
+            <div class="welcome-banner__actions">
+              <button class="btn btn--primary" id="welcome-load-demo">Load Sample Data</button>
+              <button class="btn btn--ghost" id="welcome-dismiss">Start Fresh</button>
+            </div>
+          </div>
+          <div class="welcome-banner__emoji" aria-hidden="true">📚</div>
+        </div>
+
+        <!-- Heading row -->
+        <div class="dashboard-welcome">
+          <div class="dashboard-welcome__text">
+            <h1>Good day! 👋</h1>
+            <p>Here's your study overview for today.</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <div class="dashboard-date" id="dashboard-date" aria-label="Today's date">Loading…</div>
+            <button class="quick-add-btn" id="quick-add-btn" aria-label="Add a new assignment">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Assignment
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats grid -->
+        <div class="stats-grid" role="region" aria-label="Assignment statistics">
+          <div class="stat-card stat-card--total">
+            <div class="stat-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+            </div>
+            <div class="stat-card__value" id="stat-total" aria-live="polite">0</div>
+            <div class="stat-card__label">Total Assignments</div>
+          </div>
+          <div class="stat-card stat-card--pending">
+            <div class="stat-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="stat-card__value" id="stat-pending" aria-live="polite">0</div>
+            <div class="stat-card__label">Pending</div>
+          </div>
+          <div class="stat-card stat-card--done">
+            <div class="stat-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div class="stat-card__value" id="stat-completed" aria-live="polite">0</div>
+            <div class="stat-card__label">Completed</div>
+          </div>
+          <div class="stat-card stat-card--overdue">
+            <div class="stat-card__icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="stat-card__value" id="stat-overdue" aria-live="polite">0</div>
+            <div class="stat-card__label">Overdue</div>
+          </div>
+        </div>
+
+        <!-- Progress + Goals on dashboard -->
+        <div class="dashboard-grid">
+          <!-- Today's College Classes (Live from Master Timetable) -->
+          <div class="dashboard-card" id="dashboard-classes-card" aria-label="Today's scheduled classes" style="grid-column: 1 / -1;">
+            <div class="dashboard-card__header">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <h2 class="dashboard-card__title">Today's Classes</h2>
+                <span class="badge badge--primary" id="dashboard-div-badge">Division</span>
+                <span class="badge badge--success" id="dashboard-today-day-badge">Today</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button class="link-btn" id="dashboard-change-div-btn">Change Division</button>
+                <button class="link-btn" data-nav="timetable">Full Timetable →</button>
+              </div>
+            </div>
+            <div id="today-classes-list"></div>
+          </div>
+
+          <!-- Overall Progress -->
+          <div class="dashboard-card" aria-label="Overall completion progress">
+            <div class="dashboard-card__header">
+              <h2 class="dashboard-card__title">Overall Progress</h2>
+              <span class="text-muted text-sm" id="progress-pct" aria-live="polite">0%</span>
+            </div>
+            <div class="progress-bar-wrapper" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Assignment completion progress">
+              <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="progress-label">
+              <span>0 completed</span>
+              <span>Keep it up! 💪</span>
+            </div>
+          </div>
+
+          <!-- Today's Goals Progress -->
+          <div class="dashboard-card" aria-label="Study goals progress">
+            <div class="dashboard-card__header">
+              <h2 class="dashboard-card__title">Today's Goals</h2>
+              <span class="text-muted text-sm" id="goals-stat" aria-live="polite">0/0</span>
+            </div>
+            <div class="progress-bar-wrapper" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Goals completion progress">
+              <div class="progress-bar" id="goals-progress-bar" style="width: 0%; background: linear-gradient(90deg, #6BAE9E, #3DA35D);"></div>
+            </div>
+            <div class="progress-label mt-2">
+              <span>Study goals for today</span>
+              <button class="link-btn" data-nav="goals" style="font-size: 12px;">View all →</button>
+            </div>
+          </div>
+
+          <!-- Today's Tasks -->
+          <div class="dashboard-card" aria-label="Tasks due today">
+            <div class="dashboard-card__header">
+              <h2 class="dashboard-card__title">Due Today</h2>
+              <button class="link-btn" data-nav="assignments">View all</button>
+            </div>
+            <div id="today-tasks-list"></div>
+          </div>
+
+          <!-- Upcoming -->
+          <div class="dashboard-card" aria-label="Upcoming assignment deadlines">
+            <div class="dashboard-card__header">
+              <h2 class="dashboard-card__title">Upcoming Deadlines</h2>
+              <button class="link-btn" data-nav="assignments">View all</button>
+            </div>
+            <div id="upcoming-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           ASSIGNMENTS SECTION
+      ════════════════════════════════════════════ -->
+      <section id="section-assignments" class="section" tabindex="-1" aria-label="Assignments">
+        <div class="page-header">
+          <div class="page-header__eyebrow">Track & Manage</div>
+          <h1 class="page-header__title">Assignments</h1>
+          <p class="page-header__subtitle">Keep track of all your assignments, deadlines and priorities.</p>
+        </div>
+
+        <div class="assignments-layout">
+          <!-- Assignment List -->
+          <div>
+            <!-- Filters -->
+            <div class="filters-bar" role="search" aria-label="Filter and search assignments">
+              <div class="search-input-wrapper">
+                <span class="search-icon" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                </span>
+                <input type="search" id="search-input" class="form-input" placeholder="Search assignments…" aria-label="Search assignments" />
+              </div>
+              <div class="filters-group">
+                <select id="filter-subject" class="form-select" aria-label="Filter by subject">
+                  <option value="">All Subjects</option>
+                </select>
+                <select id="filter-status" class="form-select" aria-label="Filter by status">
+                  <option value="">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="completed">Completed</option>
+                  <option value="overdue">Overdue</option>
+                </select>
+                <select id="filter-priority" class="form-select" aria-label="Filter by priority">
+                  <option value="">All Priorities</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+                <select id="sort-select" class="form-select" aria-label="Sort assignments">
+                  <option value="dueDate">Sort: Due Date</option>
+                  <option value="priority">Sort: Priority</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Assignment list -->
+            <div id="assignment-list" role="list" aria-label="Assignment list" aria-live="polite"></div>
+          </div>
+
+          <!-- Add/Edit Form -->
+          <div id="assignment-form-section">
+            <div class="form-card" role="form" aria-labelledby="assignment-form-title">
+              <h2 class="form-card__title" id="assignment-form-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-lavender)" stroke-width="2" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add Assignment
+              </h2>
+              <form id="assignment-form" novalidate>
+                <div class="form-grid form-grid--full">
+                  <div class="form-group">
+                    <label class="form-label" for="assignment-title">
+                      Title <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <input type="text" id="assignment-title" class="form-input"
+                      placeholder="e.g. Calculus Problem Set 3"
+                      aria-required="true" maxlength="120" />
+                    <span class="field-error-msg" role="alert"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="assignment-subject">
+                      Subject <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <input type="text" id="assignment-subject" class="form-input"
+                      placeholder="e.g. Mathematics"
+                      aria-required="true" maxlength="80" list="subject-suggestions" />
+                    <datalist id="subject-suggestions">
+                      <option value="Mathematics"/>
+                      <option value="English Literature"/>
+                      <option value="Computer Science"/>
+                      <option value="Chemistry"/>
+                      <option value="Physics"/>
+                      <option value="History"/>
+                      <option value="Biology"/>
+                      <option value="Economics"/>
+                      <option value="Psychology"/>
+                    </datalist>
+                    <span class="field-error-msg" role="alert"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="assignment-duedate">
+                      Due Date <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <input type="date" id="assignment-duedate" class="form-input"
+                      aria-required="true" />
+                    <span class="field-error-msg" role="alert"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="assignment-priority">Priority</label>
+                    <select id="assignment-priority" class="form-select">
+                      <option value="low">🟢 Low</option>
+                      <option value="medium" selected>🟡 Medium</option>
+                      <option value="high">🔴 High</option>
+                    </select>
+                  </div>
+
+                  <div class="form-group form-group--full">
+                    <label class="form-label" for="assignment-notes">Notes (optional)</label>
+                    <textarea id="assignment-notes" class="form-textarea"
+                      placeholder="Additional notes, instructions or context…"
+                      rows="3" maxlength="500"></textarea>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" id="assignment-submit-btn" class="btn btn--primary">
+                    Add Assignment
+                  </button>
+                  <button type="button" id="assignment-cancel-btn" class="btn btn--secondary">
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           TIMETABLE SECTION
+      ════════════════════════════════════════════ -->
+      <section id="section-timetable" class="section" tabindex="-1" aria-label="Weekly Timetable">
+        <div class="page-header">
+          <div class="page-header__eyebrow">Weekly Schedule</div>
+          <h1 class="page-header__title">Timetable</h1>
+          <p class="page-header__subtitle">Visualise your weekly class schedule at a glance.</p>
+        </div>
+
+        <div class="timetable-layout">
+          <!-- College Division Header Bar -->
+          <div class="college-timetable-bar">
+            <div class="college-timetable-info">
+              <span class="college-timetable-badge" id="tt-active-div-badge">5A-CSE</span>
+              <div>
+                <h3 class="college-timetable-title" id="tt-active-div-title">Computer Science &amp; Engineering — Semester 5</h3>
+                <p class="college-timetable-sub">Official GU Master Timetable (R2, W.E.F 31/08/2026)</p>
+              </div>
+            </div>
+            <div class="college-timetable-actions">
+              <button class="btn btn--secondary btn--sm" id="tt-switch-div-btn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+                Switch Division
+              </button>
+            </div>
+          </div>
+
+          <!-- Day Tabs for Mobile & Quick Filter -->
+          <div class="timetable-day-tabs" id="timetable-day-tabs" role="tablist" aria-label="Days of week">
+            <button class="day-tab active" data-day="All" role="tab">All Week</button>
+            <button class="day-tab" data-day="Monday" role="tab">Mon</button>
+            <button class="day-tab" data-day="Tuesday" role="tab">Tue</button>
+            <button class="day-tab" data-day="Wednesday" role="tab">Wed</button>
+            <button class="day-tab" data-day="Thursday" role="tab">Thu</button>
+            <button class="day-tab" data-day="Friday" role="tab">Fri</button>
+            <button class="day-tab" data-day="Saturday" role="tab">Sat</button>
+          </div>
+
+          <!-- Timetable grid -->
+          <div>
+            <h2 class="section-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              Weekly Schedule View
+            </h2>
+            <div id="timetable-grid" role="region" aria-label="Timetable grid" aria-live="polite"></div>
+          </div>
+
+          <!-- Add/Edit Form -->
+          <div id="timetable-form-section">
+            <div class="form-card" role="form" aria-labelledby="timetable-form-title">
+              <h2 class="form-card__title" id="timetable-form-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-lavender)" stroke-width="2" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add Class
+              </h2>
+              <form id="timetable-form" novalidate>
+                <div class="timetable-form-grid">
+                  <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label" for="tt-subject">
+                      Subject <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <input type="text" id="tt-subject" class="form-input"
+                      placeholder="e.g. Mathematics"
+                      aria-required="true" maxlength="80" list="subject-suggestions" />
+                    <span class="field-error-msg" role="alert"></span>
+                  </div>
+
+                  <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label" for="tt-day">
+                      Day <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <select id="tt-day" class="form-select" aria-required="true">
+                      <option value="">Select a day</option>
+                      <option value="Monday">Monday</option>
+                      <option value="Tuesday">Tuesday</option>
+                      <option value="Wednesday">Wednesday</option>
+                      <option value="Thursday">Thursday</option>
+                      <option value="Friday">Friday</option>
+                      <option value="Saturday">Saturday</option>
+                      <option value="Sunday">Sunday</option>
+                    </select>
+                    <span class="field-error-msg" role="alert"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="tt-start">
+                      Start Time <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <input type="time" id="tt-start" class="form-input" aria-required="true" />
+                    <span class="field-error-msg" role="alert"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="tt-end">
+                      End Time <span class="required" aria-hidden="true">*</span>
+                    </label>
+                    <input type="time" id="tt-end" class="form-input" aria-required="true" />
+                    <span class="field-error-msg" role="alert"></span>
+                  </div>
+
+                  <div class="form-group" style="grid-column: 1 / -1;">
+                    <label class="form-label" for="tt-location">Location (optional)</label>
+                    <input type="text" id="tt-location" class="form-input"
+                      placeholder="e.g. Room 201, Science Lab"
+                      maxlength="80" />
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" id="timetable-submit-btn" class="btn btn--primary">Add Class</button>
+                  <button type="button" id="timetable-cancel-btn" class="btn btn--secondary">Cancel</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           GOALS SECTION
+      ════════════════════════════════════════════ -->
+      <section id="section-goals" class="section" tabindex="-1" aria-label="Study Goals">
+        <div class="page-header">
+          <div class="page-header__eyebrow">Daily Focus</div>
+          <h1 class="page-header__title">Study Goals</h1>
+          <p class="page-header__subtitle">Set daily study goals and track your focus each day.</p>
+        </div>
+
+        <div class="goals-layout">
+          <!-- Left: Goals list -->
+          <div>
+            <!-- Progress summary -->
+            <div class="goals-progress-section" aria-label="Daily goal progress">
+              <div class="goals-progress-header">
+                <span class="goals-progress-label">Today's Progress</span>
+                <span class="goals-progress-count" id="goals-count" aria-live="polite">0 of 0 completed</span>
+              </div>
+              <div class="progress-bar-wrapper" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" aria-label="Goals completion percentage">
+                <div class="progress-bar" id="goals-progress-bar-main" style="width: 0%; background: linear-gradient(90deg, #6BAE9E, #3DA35D);"></div>
+              </div>
+              <div class="progress-label mt-2">
+                <span id="goals-pct" aria-live="polite">0%</span>
+                <span>completed today</span>
+              </div>
+            </div>
+
+            <!-- Goals list -->
+            <h2 class="section-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>
+              </svg>
+              Today's Goals
+            </h2>
+            <div id="goals-list" role="list" aria-label="Study goals list" aria-live="polite"></div>
+
+            <!-- Goal history -->
+            <div id="goal-history-section" class="goal-history-section" style="display: none;">
+              <h2 class="section-title" style="margin-bottom: 16px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Recent History
+              </h2>
+              <p class="text-sm text-muted mb-4">Incomplete goals from previous days are archived here — they are never silently deleted.</p>
+              <div id="goal-history-list"></div>
+            </div>
+          </div>
+
+          <!-- Right: Form -->
+          <div id="goal-form-section">
+            <div class="form-card" role="form" aria-labelledby="goal-form-title">
+              <h2 class="form-card__title" id="goal-form-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-sage)" stroke-width="2" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Add Goal
+              </h2>
+              <form id="goal-form" novalidate>
+                <div class="form-group mb-4">
+                  <label class="form-label" for="goal-title">
+                    Goal <span class="required" aria-hidden="true">*</span>
+                  </label>
+                  <input type="text" id="goal-title" class="form-input"
+                    placeholder="e.g. Study for Calculus test"
+                    aria-required="true" maxlength="120" />
+                  <span class="field-error-msg" role="alert"></span>
+                </div>
+                <div class="form-group mb-4">
+                  <label class="form-label" for="goal-description">Description (optional)</label>
+                  <textarea id="goal-description" class="form-textarea"
+                    placeholder="What exactly will you do? Be specific…"
+                    rows="3" maxlength="300"></textarea>
+                </div>
+                <div class="form-actions">
+                  <button type="submit" id="goal-submit-btn" class="btn btn--primary">Add Goal</button>
+                  <button type="button" id="goal-cancel-btn" class="btn btn--secondary">Cancel</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Daily tips -->
+            <div class="form-card" style="background: var(--color-sage-pale); border-color: var(--color-sage-light);">
+              <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--color-sage);">💡 Study Tips</h3>
+              <ul style="font-size: 13px; color: var(--color-text-secondary); line-height: 1.8; list-style: disc; padding-left: 18px;">
+                <li>Set 3–5 specific, achievable goals per day.</li>
+                <li>Break large tasks into smaller steps.</li>
+                <li>Use the Pomodoro technique: 25 min study, 5 min break.</li>
+                <li>Review goals each evening and plan for tomorrow.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           SETTINGS SECTION
+      ════════════════════════════════════════════ -->
+      <section id="section-settings" class="section" tabindex="-1" aria-label="Settings">
+        <div class="page-header">
+          <div class="page-header__eyebrow">Preferences</div>
+          <h1 class="page-header__title">Settings</h1>
+          <p class="page-header__subtitle">Customise your StudyNest experience.</p>
+        </div>
+
+        <div class="settings-layout">
+
+          <!-- About -->
+          <div class="about-card" role="region" aria-label="About StudyNest">
+            <h2 class="about-card__title">📚 About StudyNest</h2>
+            <div class="about-card__body">
+              <p>
+                StudyNest is a modern student productivity tool designed to help you manage assignments,
+                visualise your weekly timetable and stay focused with daily study goals.
+              </p>
+              <p>
+                Built as a clean, lightweight web application with no backend or login required.
+                Everything is stored privately in your browser using LocalStorage — your data never leaves your device.
+              </p>
+              <p>
+                This is version 1.0, designed as both a genuinely useful tool and a portfolio showcase
+                of modern HTML, CSS and JavaScript skills.
+              </p>
+            </div>
+            <div class="version-note">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span><strong>Version 1 — Local Storage Only.</strong> All data is saved in this browser. Clearing browser data or switching browsers will start fresh. No cloud sync in this version.</span>
+            </div>
+          </div>
+
+          <!-- My College Timetable Settings -->
+          <div class="settings-card" role="region" aria-label="College Timetable Settings">
+            <h2 class="settings-card__title">🎓 My College Timetable</h2>
+            <div class="settings-row">
+              <div class="settings-row__info">
+                <div class="settings-row__label">Selected Division</div>
+                <div class="settings-row__desc" id="settings-current-div-desc">Gandhinagar University — B.Tech Semester 5</div>
+              </div>
+              <button id="settings-change-div-btn" class="btn btn--secondary btn--sm">Change Division</button>
+            </div>
+          </div>
+
+          <!-- Appearance -->
+          <div class="settings-card" role="region" aria-label="Appearance settings">
+            <h2 class="settings-card__title">Appearance</h2>
+            <div class="settings-row">
+              <div class="settings-row__info">
+                <div class="settings-row__label">Dark Mode</div>
+                <div class="settings-row__desc">Switch between light and dark themes.</div>
+              </div>
+              <label class="toggle-label" aria-label="Toggle dark mode">
+                <input type="checkbox" id="theme-toggle" role="switch" aria-checked="false" />
+                <span class="toggle-track" aria-hidden="true"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Data management -->
+          <div class="settings-card" role="region" aria-label="Data management">
+            <h2 class="settings-card__title">Data Management</h2>
+
+            <div class="settings-row">
+              <div class="settings-row__info">
+                <div class="settings-row__label">LocalStorage Status</div>
+                <div class="settings-row__desc" id="storage-available">Checking…</div>
+              </div>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row__info">
+                <div class="settings-row__label">Load Demo Data</div>
+                <div class="settings-row__desc">Populate with sample assignments, timetable and goals to explore all features.</div>
+              </div>
+              <button id="load-demo-btn" class="btn btn--secondary btn--sm">Load Demo</button>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row__info">
+                <div class="settings-row__label">Clear Demo Data</div>
+                <div class="settings-row__desc">Remove the sample data and start with a blank slate.</div>
+              </div>
+              <button id="clear-demo-btn" class="btn btn--secondary btn--sm">Clear Demo</button>
+            </div>
+
+            <div class="settings-row">
+              <div class="settings-row__info">
+                <div class="settings-row__label" style="color: var(--color-high);">Clear All Data</div>
+                <div class="settings-row__desc">
+                  Permanently delete all your assignments, timetable entries and study goals.
+                  <strong>This cannot be undone.</strong>
+                </div>
+              </div>
+              <button id="clear-all-btn" class="btn btn--danger btn--sm">Clear All</button>
+            </div>
+          </div>
+
+          <!-- Keyboard shortcuts info -->
+          <div class="settings-card" role="region" aria-label="Keyboard shortcuts">
+            <h2 class="settings-card__title">Tips &amp; Info</h2>
+            <div class="settings-row">
+              <div class="settings-row__info">
+                <div class="settings-row__label">Keyboard Navigation</div>
+                <div class="settings-row__desc">All interactive elements are keyboard accessible. Use Tab to navigate, Enter/Space to activate.</div>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row__info">
+                <div class="settings-row__label">Data Persistence</div>
+                <div class="settings-row__desc">Your data saves automatically with every action. Refresh the page to verify it persists.</div>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row__info">
+                <div class="settings-row__label">Daily Goal Reset</div>
+                <div class="settings-row__desc">Goals reset each day. Incomplete goals from previous days are archived in the Goals history — they are never silently deleted.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+    </div><!-- /page-content -->
+
+    <!-- Footer -->
+    <footer class="app-footer" role="contentinfo">
+      <div>
+        <strong>StudyNest</strong> v1.0 — Student Planner &amp; Assignment Tracker
+      </div>
+      <div class="footer__right">
+        <span>Data saved locally in your browser</span>
+        <span>·</span>
+        <span>No login or cloud required</span>
+      </div>
+    </footer>
+
+  </div><!-- /main-content -->
+</div><!-- /app-wrapper -->
+
+<script src="js/timetable-data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/app.js"></script>
+
+<!-- Mobile menu close on overlay click and nav link click -->
+<script>
+  document.getElementById('mobile-overlay').addEventListener('click', function() {
+    document.getElementById('mobile-menu').classList.remove('open');
+    document.getElementById('hamburger').setAttribute('aria-expanded', 'false');
+  });
+  document.getElementById('mobile-menu-close').addEventListener('click', function() {
+    document.getElementById('mobile-menu').classList.remove('open');
+    document.getElementById('hamburger').setAttribute('aria-expanded', 'false');
+  });
+  // Dashboard nav link buttons (in dashboard cards)
+  document.addEventListener('click', function(e) {
+    if (e.target && e.target.dataset && e.target.dataset.nav && e.target.tagName === 'BUTTON') {
+      // handled by app.js nav-link click delegation
+    }
+  });
+</script>
+
+</body>
+</html>
